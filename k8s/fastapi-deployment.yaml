@@ -1,0 +1,50 @@
+# k8s/fastapi-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app
+  labels:
+    app: fastapi-app
+spec:
+  replicas: 2 # Start with 2 replicas
+  selector:
+    matchLabels:
+      app: fastapi-app
+  template:
+    metadata:
+      labels:
+        app: fastapi-app
+    spec:
+      containers:
+      - name: fastapi-news-summarizer
+        image: your-container-registry/fastapi-news-summarizer:latest # Replace with your actual image path
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: PLAYWRIGHT_WS_ENDPOINT
+          value: "ws://playwright-service.default.svc.cluster.local:3388" # Assuming playwright-service is in 'default' namespace
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-api-key-secret # Name of the K8s secret
+              key: OPENAI_API_KEY       # Key within the secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "0.2"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+        livenessProbe:
+          httpGet:
+            path: /docs # FastAPI provides /docs by default, can be used as a basic health check
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 10

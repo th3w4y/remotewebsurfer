@@ -1,0 +1,40 @@
+# k8s/playwright-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playwright-server
+  labels:
+    app: playwright-server
+spec:
+  replicas: 2 # Start with 2, can be adjusted based on load
+  selector:
+    matchLabels:
+      app: playwright-server
+  template:
+    metadata:
+      labels:
+        app: playwright-server
+    spec:
+      containers:
+      - name: playwright
+        image: your-container-registry/playwright-server:latest # Replace with your actual image path
+        ports:
+        - containerPort: 3388
+          name: playwright-ws
+        resources:
+          requests:
+            memory: "1Gi" # Browser instances can be memory intensive
+            cpu: "0.5"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        livenessProbe:
+          tcpSocket:
+            port: playwright-ws
+          initialDelaySeconds: 30 # Give time for the server to start
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: playwright-ws
+          initialDelaySeconds: 15
+          periodSeconds: 10

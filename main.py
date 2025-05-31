@@ -1,8 +1,11 @@
 import os
 from fastapi import FastAPI, HTTPException
+from fastapi.concurrency import run_in_executor
 from autogen.agentchat.contrib.multimodal_web_surfer import MultiModalWebSurfer
 
 app = FastAPI()
+
+PLAYWRIGHT_WS_ENDPOINT = os.environ.get("PLAYWRIGHT_WS_ENDPOINT", "ws://localhost:3388")
 
 @app.get("/news")
 async def get_news():
@@ -23,7 +26,7 @@ async def get_news():
             browser_config={
                 "browser_type": "connect_existing",
                 "viewport_size": {"width": 1280, "height": 720},
-                "ws_endpoint": "ws://localhost:3388",
+                "ws_endpoint": PLAYWRIGHT_WS_ENDPOINT,
             }
         )
 
@@ -31,14 +34,14 @@ async def get_news():
         task = "Summarize the top 3 latest news headlines from BBC News."
 
         # Get the news using the web surfer
-        agent_response = news_surfer.chat(task)
+        agent_response = await run_in_executor(None, news_surfer.chat, task)
 
         # Return the response as JSON
         # Assuming agent_response itself is serializable or a string
         return {"news_summary": agent_response}
 
     except ConnectionRefusedError:
-        raise HTTPException(status_code=503, detail="Playwright server not available. Make sure it's running on ws://localhost:3388")
+        raise HTTPException(status_code=503, detail=f"Playwright server not available. Make sure it's running on {PLAYWRIGHT_WS_ENDPOINT}")
     except Exception as e:
         # Catch any other exceptions during the process
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")

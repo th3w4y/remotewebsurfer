@@ -1,0 +1,15 @@
+# k8s/playwright-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: playwright-service
+  labels:
+    app: playwright-server
+spec:
+  type: ClusterIP # Internal service, only accessible within the cluster
+  selector:
+    app: playwright-server # Matches the labels of the Playwright server pods
+  ports:
+  - protocol: TCP
+    port: 3388 # Port the service will be available on
+    targetPort: playwright-ws # Matches the containerPort name or number in the deployment
