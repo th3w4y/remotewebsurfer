@@ -1,0 +1,15 @@
+# k8s/fastapi-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-app-service
+  labels:
+    app: fastapi-app
+spec:
+  type: ClusterIP # Or LoadBalancer for external access
+  selector:
+    app: fastapi-app # Matches the labels of the FastAPI pods
+  ports:
+  - protocol: TCP
+    port: 80 # Port the service will be available on
+    targetPort: http # Matches the containerPort name (8000)
