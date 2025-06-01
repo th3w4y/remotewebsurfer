@@ -15,6 +15,7 @@ spec:
       labels:
         app: fastapi-app
     spec:
+      serviceAccountName: default
       containers:
       - name: fastapi-news-summarizer
         image: your-container-registry/fastapi-news-summarizer:latest # Replace with your actual image path
@@ -22,8 +23,6 @@ spec:
         - containerPort: 8000
           name: http
         env:
-        - name: PLAYWRIGHT_WS_ENDPOINT
-          value: "ws://playwright-service.default.svc.cluster.local:3388" # Assuming playwright-service is in 'default' namespace
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:

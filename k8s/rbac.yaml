@@ -1,0 +1,31 @@
+# k8s/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default # Apply this role in the namespace where jobs will be created
+  name: fastapi-job-manager-role
+rules:
+- apiGroups: ["batch"] # For Jobs
+  resources: ["jobs"]
+  verbs: ["create", "get", "list", "watch", "delete", "patch"]
+- apiGroups: [""] # For Pods (core API group)
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"] # To find pods associated with a Job
+- apiGroups: [""] # For Pod logs
+  resources: ["pods/log"]
+  verbs: ["get", "list"] # To retrieve logs from Job pods
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fastapi-job-manager-binding
+  namespace: default # This binding applies in the 'default' namespace
+subjects:
+- kind: ServiceAccount
+  name: default # Assumes FastAPI pods run under the 'default' SA.
+               # If FastAPI uses a dedicated SA, specify its name here.
+  namespace: default # Namespace of the ServiceAccount
+roleRef:
+  kind: Role
+  name: fastapi-job-manager-role # The Role defined above
+  apiGroup: rbac.authorization.k8s.io

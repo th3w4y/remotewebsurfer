@@ -1,0 +1,18 @@
+# Dockerfile.job_runner
+FROM mcr.microsoft.com/playwright/python:v1.40.0-focal
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install chromium browser and its dependencies.
+# Update PLAYWRIGHT_BROWSER_TYPE env var in run_web_surfer_task.py if a different browser is preferred.
+RUN playwright install chromium --with-deps
+# For other browsers, e.g., RUN playwright install firefox --with-deps
+
+COPY run_web_surfer_task.py .
+
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "run_web_surfer_task.py"]

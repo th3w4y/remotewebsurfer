@@ -1,4 +1,5 @@
 fastapi
-uvicorn
-autogen
+uvicorn[standard] # Adding [standard] for uvicorn as it's common
+autogen==0.5.7
 playwright
+kubernetes
